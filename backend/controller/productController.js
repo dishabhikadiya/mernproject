@@ -57,7 +57,7 @@ exports.getProductdetails = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     product,
-    productcount,
+    // productcount,
   });
 });
 // delete product
