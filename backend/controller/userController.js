@@ -27,7 +27,7 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new ErrorHander("pleace enter email and password", 400));
+    return next(new ErrorHander("plz enter email and password", 400));
   }
 
   const user = await User.findOne({ email }).select("+password");
@@ -173,8 +173,8 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   });
 
   res.status(200).json({
-    success:true,
-  })
+    success: true,
+  });
 });
 
 // Get all users(admin)
@@ -222,7 +222,6 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
 // update User Role -- Admin
 exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
@@ -254,7 +253,7 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 
   const imageId = user.avatar.public_id;
 
-  await cloudinary.v2.uploader.destroy(imageId);
+  // await cloudinary.v2.uploader.destroy(imageId);
 
   await user.remove();
 

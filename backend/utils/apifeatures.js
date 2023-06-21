@@ -1,4 +1,4 @@
-class apifeatures {
+class ApiFeatures {
   constructor(query, querystr) {
     this.query = query;
     this.querystr = querystr;
@@ -24,8 +24,9 @@ class apifeatures {
     removeFields.forEach((key) => delete querycopy[key]);
 
     // filter for pricee and reting
-    console.log(querycopy);
+
     let querystr = JSON.stringify(querycopy);
+    console.log("query---------", querycopy);
     querystr = querystr.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
     this.query = this.query.find(JSON.parse(querystr));
     console.log(querystr);
@@ -39,4 +40,4 @@ class apifeatures {
     return this;
   }
 }
-module.exports = apifeatures;
+module.exports = ApiFeatures;

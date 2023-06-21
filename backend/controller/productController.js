@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const Product = require("../Model/productModel");
+const Product = require("../Model/productModel.js");
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const apifeatures = require("../utils/apifeatures");
+const ApiFeatures = require("../utils/apifeatures");
 const sendEmail = require("../utils/sendEmail");
 const User = require("../Model/userModel");
 // create Admin
@@ -16,17 +16,29 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   });
 });
 // get all product
-exports.getAllProducts = catchAsyncErrors(async (req, res) => {
-  const resultperpage = 5;
-  const productcount = await Product.countDocuments();
-  const apifeature = new apifeatures(Product.find(), req.query)
+exports.getAllProductsss = catchAsyncErrors(async (req, res, next) => {
+  console.log("--------------------------------", req.query);
+  const resultperpage = 10;
+  let productCount = await Product.countDocuments();
+  // console.log("productCount", productCount);
+  let apiFeature = new ApiFeatures(Product.find(), req.query)
     .search()
     .filter()
     .pagination(resultperpage);
-  const products = await apifeature.query;
+  const products = await apiFeature.query;
+
+  let filteredProductsCount = products.length;
+
+  apiFeature.pagination(resultperpage);
+
+  products = await apiFeature.query.clone();
+
   res.status(200).json({
     success: true,
     products,
+    productCount,
+    resultperpage,
+    filteredProductsCount,
   });
 });
 //  update product --admin
@@ -44,20 +56,50 @@ exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     product,
-    productcount,
+    productCount,
+  });
+});
+
+exports.getAllProducts = catchAsyncErrors(async (req, res) => {
+  console.log("333333333", req.query);
+  const resultPerPage = 8;
+  const productsCount = await Product.countDocuments();
+
+  console.log("productsCount", productsCount);
+
+  const apiFeature = new ApiFeatures(Product.find(), req.query)
+    .search()
+    .filter();
+
+  let products = await apiFeature.query;
+  console.log("products", products);
+
+  let filteredProductsCount = products.length;
+
+  apiFeature.pagination(resultPerPage);
+
+  products = await apiFeature.query.clone();
+  console.log("products77777", products);
+
+  return res.status(200).json({
+    success: true,
+    products,
+    // productsCount,
+    resultPerPage,
+    filteredProductsCount,
   });
 });
 // get all product details
 exports.getProductdetails = catchAsyncErrors(async (req, res, next) => {
-  console.log("getProductdetails");
   const product = await Product.findById(req.params.id);
+  console.log("getProductdetails", req.params.id);
   if (!product) {
     return next(new ErrorHander("product not found", 404));
   }
   res.status(200).json({
     success: true,
     product,
-    // productcount,
+    // productCount,
   });
 });
 // delete product
@@ -85,6 +127,48 @@ exports.getProductReviews = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     reviews: product.reviews,
+  });
+});
+
+// Create New Review or Update the review
+exports.createProductReview = catchAsyncErrors(async (req, res, next) => {
+  const { rating, comment, productId } = req.body;
+
+  const review = {
+    user: req.user._id,
+    name: req.user.name,
+    rating: Number(rating),
+    comment,
+  };
+
+  const product = await Product.findById(productId);
+
+  const isReviewed = product.reviews.find(
+    (rev) => rev.user.toString() === req.user._id.toString()
+  );
+
+  if (isReviewed) {
+    product.reviews.forEach((rev) => {
+      if (rev.user.toString() === req.user._id.toString())
+        (rev.rating = rating), (rev.comment = comment);
+    });
+  } else {
+    product.reviews.push(review);
+    product.numOfReviews = product.reviews.length;
+  }
+
+  let avg = 0;
+
+  product.reviews.forEach((rev) => {
+    avg += rev.rating;
+  });
+
+  product.ratings = avg / product.reviews.length;
+
+  await product.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
   });
 });
 
