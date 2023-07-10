@@ -4,14 +4,12 @@ import MataData from "../layout/MataData";
 import axios from "axios";
 import Loader from "../layout/Loader/Loader";
 import ProductCard from "./ProductCard";
-import { BsSearch } from "react-icons/bs";
+import { AiOutlineShoppingCart } from "react-icons/ai";
 import { TfiMouse } from "react-icons/tfi";
-import { BiUserCircle } from "react-icons/bi";
+import { BiUser, BiSearchAlt2 } from "react-icons/bi";
 import { NavLink } from "react-router-dom/cjs/react-router-dom.min";
-import Search from "../Product/Search";
 const Home = () => {
   const [first, setfirst, loading] = useState([]);
-  // const dispatch = useDispatch();
 
   const dataGet = async () => {
     const data = await axios.get("http://localhost:4000/api/v1/products");
@@ -31,7 +29,21 @@ const Home = () => {
       ) : (
         <Fragment>
           <MataData title="HOME" />
+
           <div className="banner">
+            <div className="icn">
+              <NavLink to="search">
+                <BiSearchAlt2 fill="white" className="icnh" />
+              </NavLink>
+              &nbsp; &nbsp;
+              <NavLink to="login">
+                <BiUser fill="white" className="icnh" />
+              </NavLink>
+              &nbsp; &nbsp;
+              <NavLink to="cart">
+                <AiOutlineShoppingCart fill="white" className="icnh" />
+              </NavLink>
+            </div>
             <p>welcome to Ecommerce</p>
             <h1>FIND AMEZING PRODUCTS BELOW</h1>
             <a href="#container">
@@ -39,7 +51,7 @@ const Home = () => {
                 Scroll
                 <TfiMouse />
               </button>
-            </a> 
+            </a>
           </div>
           <h2 className="homeHeading">Featured Products</h2>
           <div className="container" id="container">

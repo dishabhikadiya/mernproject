@@ -12,7 +12,13 @@
     justify-content: center;
     color: white;
   }
-  
+  .icn{
+    padding: 4vw;
+  }
+  .icnh{
+    height: 30px;
+    width: 30px;
+  }
   .banner > h1 {
     margin: 5vmax;
   
@@ -39,17 +45,17 @@
     color: white;
   }
   
-  /* .banner::after {
+  .banner::after {
     content: "";
     width: 100vw;
     height: 100vmin;
     background-color: #ffffff;
     position: absolute;
     top: 0%;
-    left: 0; */
-    /* clip-path: polygon(100% 68%, 0 100%, 100% 100%); */
-    /* max-width: 100%; */
-  /* } */
+    left: 0;
+    clip-path: polygon(100% 68%, 0 100%, 100% 100%);
+    max-width: 100%;
+   }
   .icons{
     cursor: pointer;
     text-decoration: none;

@@ -4,7 +4,7 @@ import { ReactNavbar } from "overlay-navbar";
 const Header = () => {
   return (
     <ReactNavbar
-      logo="bag.png"
+      // logo="bag.png"
       burgerColor="crimson"
       navColor1="#fff5f5"
       burgerColorHover="#900"

@@ -5,19 +5,26 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const req = require("express/lib/request");
 const crypto = require("crypto");
-
+const cloudinary = require("cloudinary");
 // register user
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
+  console.log("req", req.body);
+  const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+    folder: "avatar",
+    width: 150,
+    crop: "scale",
+  });
   const { name, email, password } = req.body;
   const user = await User.create({
     name,
     email,
     password,
     avatar: {
-      public_id: "this is Sample id",
-      url: "profilepicurl",
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
     },
   });
+  console.log("user", user);
   // const token = user.getJWTToken()
   sendToken(user, 201, res);
 });
@@ -47,7 +54,6 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
 // Logout User
 exports.logout = catchAsyncErrors(async (req, res, next) => {
-  // console.log(cookie,"hello")
   res.cookie("token", null, {
     expires: new Date(Date.now()),
     httpOnly: true,
@@ -58,6 +64,7 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
     message: "Logged Out",
   });
 });
+
 // forgot password
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
@@ -71,9 +78,11 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   console.log("resetToken", resetToken);
   await user.save({ validateBeforeSave: false });
 
-  const resetPasswordUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/password/reset/${resetToken}`;
+  // const resetPasswordUrl = `${req.protocol}://${req.get(
+  //   "host"
+  // )}/api/v1/password/reset/${resetToken}`;
+
+  const resetPasswordUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
 
   const message = `Your password reset token is :- \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please ignore it.`;
   try {
@@ -105,6 +114,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
     .digest("hex");
 
   console.log("resetPasswordToken", req.params.token, resetPasswordToken);
+
   const user = await User.findOne({
     resetPasswordToken,
     resetPasswordExpire: { $gt: Date.now() },
@@ -130,8 +140,9 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 });
 //  get user detail
 exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req?.user?.id);
 
+  console.log("==============1234567", user);
   res.status(200).json({
     success: true,
     user,
@@ -158,14 +169,32 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
-// update User Profile(admin)
+// updateProfile
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
   };
 
-  // we will add cludinary later
+  if (req.body.avatar !== "") {
+    const user = await User.findById(req.user.id);
+
+    const imageId = user.avatar.public_id;
+
+    await cloudinary.v2.uploader.destroy(imageId);
+
+    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      folder: "avatars",
+      width: 150,
+      crop: "scale",
+    });
+
+    newUserData.avatar = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
+  }
+
   const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
     runValidators: true,
@@ -176,6 +205,15 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     success: true,
   });
 });
+// const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+//   new: true,
+//   runValidators: true,
+//   useFindAndModify: false,
+// });
+
+// res.status(200).json({
+//   success: true,
+// });
 
 // Get all users(admin)
 exports.getAllUser = catchAsyncErrors(async (req, res, next) => {

@@ -8,10 +8,14 @@ import { Rating } from "@material-ui/lab";
 import ReviewCard from "./ReviewCard";
 import Loader from "../layout/Loader/Loader";
 import MataData from "../layout/MataData";
-
+import { useAlert } from "react-alert";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 // import { useParams } from "react-router-dom/cjs/react-router-dom";
 
 const ProductDetails = (product) => {
+  console.log("image ", product);
+  const alert = useAlert();
+  const history = useHistory();
   let { id } = useParams();
   const options = {
     size: "large",
@@ -19,17 +23,37 @@ const ProductDetails = (product) => {
     readOnly: true,
     precision: 0.5,
   };
+  const [quantity, setQuantity] = useState(1);
+  const increaseQuantity = () => {
+    if (setdata.Stock <= quantity) return;
 
-  const [setdata, first, loading] = useState([]);
+    const qty = quantity + 1;
+    setQuantity(qty);
+  };
+
+  const decreaseQuantity = () => {
+    if (1 >= quantity) return;
+
+    const qty = quantity - 1;
+    setQuantity(qty);
+  };
+  const addToCartHendler = () => {
+    history.push("/Shipping");
+    console.log("rrrrrr", setdata._id);
+    localStorage.setItem(`cart_${setdata._id}`, JSON.stringify({ ...setdata }));
+    console.log(setdata);
+    // alert("Added to Cart Successfully!");
+  };
+  const [loading, setloading] = useState(false);
+  const [setdata, setdataDt] = useState([]);
   const dataGet = async (req, res) => {
     // console.log("data --- ", id);
     const data = await axios.get(
       `http://localhost:4000/api/v1/getproduct/${id}`
     );
     console.log("zxcvbnm", data);
-    first(data.data.product);
+    setdataDt(data.data.product);
   };
-
   useEffect(() => {
     dataGet();
   }, []);
@@ -39,7 +63,7 @@ const ProductDetails = (product) => {
         <Loader />
       ) : (
         <Fragment>
-          <MataData title={product.name} />
+          <MataData title={setdata.name} />
           <div className="ProductDetails">
             <div>
               <Carousel>
@@ -48,7 +72,7 @@ const ProductDetails = (product) => {
                     <div>
                       <img
                         className="CarouselImage"
-                        key={setdata.i}
+                        key={item.i}
                         src={item.url}
                         alt={`${i} Slide`}
                       />
@@ -59,7 +83,10 @@ const ProductDetails = (product) => {
             <div>
               <div className="detailsBlock-1">
                 <h2>{setdata.name}</h2>
-                <p>product # {setdata?._id}</p>
+                <p>
+                  product # {setdata?._id}
+                  {/* {console.log("1111",setdata._id)} */}
+                </p>
               </div>
               <div className="detailsBlock-2">
                 <Rating {...options} />
@@ -72,11 +99,11 @@ const ProductDetails = (product) => {
                 <h1>{`₹${setdata.price}`}</h1>
                 <div className="detailsBlock-3-1">
                   <div className="detailsBlock-3-1-1">
-                    <button>-</button>
-                    <input value="1" type="number" />
-                    <button>+</button>
+                    <button onClick={decreaseQuantity}>-</button>
+                    <input type="number" readOnly value={quantity} />
+                    <button onClick={increaseQuantity}>+</button>
                   </div>
-                  <button>Add to Cart</button>
+                  <button onClick={addToCartHendler}>BUY NOW</button>
                 </div>
                 <p>
                   status:{""}

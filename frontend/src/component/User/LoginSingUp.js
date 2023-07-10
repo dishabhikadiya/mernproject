@@ -1,19 +1,22 @@
-import React, { Fragment, useRef, useEffect } from "react";
+import React, { Fragment, useRef } from "react";
 import "./LoginSingUp.css";
 import { AiOutlineMail } from "react-icons/ai";
-import { Link } from "react-router-dom/cjs/react-router-dom";
+import { NavLink } from "react-router-dom/cjs/react-router-dom";
 import axios from "axios";
 import { useState } from "react";
 import { AiOutlineUnlock, AiFillLock } from "react-icons/ai";
 import { FiUser } from "react-icons/fi";
 import Loader from "../layout/Loader/Loader";
-
+import { useAlert } from "react-alert";
+import { useHistory } from "react-router-dom";
 const LoginSingUp = () => {
+  const alert = useAlert();
+  const history = useHistory();
   const loginTab = useRef(null);
   const registerTab = useRef(null);
   const switcherTab = useRef(null);
 
-  const [loginEmail, setLoginEmail] = useState("");
+  const [loginEmail, setLoginEmail, loading] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [user, setUser] = useState({
     name: "",
@@ -21,37 +24,33 @@ const LoginSingUp = () => {
     password: "",
   });
   const { name, email, password } = user;
-  const [avatar, setAvatar, loading] = useState();
+  const [avatar, setAvatar] = useState();
   const [avatarPreview, setAvatarPreview] = useState("/images/profile.png");
-
   const loginSubmit = (e) => {
     e.preventDefault();
     try {
-      console.log(loginPassword, "loginPassword");
-      // axios.post("http://localhost:4000/api/v1/login", {
-      //   loginEmail,
-      //   loginPassword,
-      // });
-
+      // console.log(loginPassword, "loginPassword");
       let data = JSON.stringify({
         email: loginEmail,
         password: loginPassword,
-      })
+      });
       let config = {
         method: "post",
         maxBodyLength: Infinity,
         url: "http://localhost:4000/api/v1/login",
         headers: {
           "Content-Type": "application/json",
-          Cookie:
-            "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MzNlNzk1ZGMzOGEzMTM1YTM1Y2JiZCIsImlhdCI6MTY4NzM0MDkwMywiZXhwIjoxNjg3NzcyOTAzfQ.d6d63jDDz5i1QlVoQ8LJDpdKqRaEFdSfOpeG_iKSUiM",
         },
         data: data,
       };
+      console.log();
       axios
         .request(config)
         .then((response) => {
-          console.log(JSON.stringify(response.data));
+          alert.success("success");
+          history.push("/profile");
+          console.log(response.data.token);
+          document.cookie = `token=${response.data.token}`;
         })
         .catch((error) => {
           console.log(error);
@@ -61,7 +60,6 @@ const LoginSingUp = () => {
     }
     console.log("submitting");
   };
-
   const registerDataChange = (e) => {
     if (e.target.name === "avatar") {
       const reader = new FileReader();
@@ -76,16 +74,38 @@ const LoginSingUp = () => {
       setUser({ ...user, [e.target.name]: e.target.value });
     }
   };
-
-  const registerSubmit = (e) => {
+  // console.log("avrtararat", avatar);
+  const registerSubmit = async (e) => {
     e.preventDefault();
-
     const myForm = new FormData();
-    myForm.set("name", name);
-    myForm.set("email", email);
-    myForm.set("password", password);
-    myForm.set("avatar", avatar);
-    console.log("form submite");
+    myForm.append("name", user.name);
+    myForm.append("email", user.email);
+    myForm.append("password", user.password);
+    myForm.append("avatar", avatar);
+    console.log("form submite", myForm);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/register",
+        myForm,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            isAuthenticated: true,
+          },
+        }
+      );
+      if (response.ok) {
+        console.log("User registered successfully");
+        alert.success("success");
+        history.push("");
+      } else {
+        console.log("Registration failed");
+        // alert.error(error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
   const switchTabs = (e, tab) => {
     if (tab === "login") {
@@ -103,7 +123,6 @@ const LoginSingUp = () => {
       loginTab.current.classList.add("shiftToLeft");
     }
   };
-
   return (
     <Fragment>
       {loading ? (
@@ -140,8 +159,14 @@ const LoginSingUp = () => {
                     onChange={(e) => setLoginPassword(e.target.value)}
                   />
                 </div>
-                <Link to="/password/forgot">Forget Password ?</Link>
-                <input type="submit" value="Login" className="loginBtn" />
+                <NavLink to="/forgot">Forget Password ?</NavLink>
+
+                <input
+                  type="submit"
+                  value="Login"
+                  className="loginBtn"
+                  // onClick={loginsub}
+                />
               </form>
               <form
                 className="signUpForm"

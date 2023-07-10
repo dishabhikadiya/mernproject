@@ -1,10 +1,11 @@
-const Order = require("../models/orderModel");
-const Product = require("../models/productModel");
+const Order = require("../Model/ordermodel");
+const Product = require("../Model/productModel");
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 // Create new Order
 exports.newOrder = catchAsyncErrors(async (req, res, next) => {
+  console.log("asdfghjk");
   const {
     shippingInfo,
     orderItems,
@@ -15,6 +16,7 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     totalPrice,
   } = req.body;
 
+  console.log("reeq.body", req.body, req.user, orderItems);
   const order = await Order.create({
     shippingInfo,
     orderItems,
@@ -24,7 +26,7 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
     shippingPrice,
     totalPrice,
     paidAt: Date.now(),
-    user: req.user._id,
+    // user: req.user._id,
   });
 
   res.status(201).json({
@@ -39,10 +41,12 @@ exports.getSingleOrder = catchAsyncErrors(async (req, res, next) => {
     "user",
     "name email"
   );
+  // console.log("order", order);
 
   if (!order) {
     return next(new ErrorHander("Order not found with this Id", 404));
   }
+  console.log("hello", order);
 
   res.status(200).json({
     success: true,
@@ -52,8 +56,8 @@ exports.getSingleOrder = catchAsyncErrors(async (req, res, next) => {
 
 // get logged in user  Orders
 exports.myOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find({ user: req.user._id });
-
+  const orders = await Order.find({ user: req.user_id });
+  console.log("orders", orders);
   res.status(200).json({
     success: true,
     orders,
@@ -62,6 +66,7 @@ exports.myOrders = catchAsyncErrors(async (req, res, next) => {
 
 // get all Orders -- Admin
 exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
+  console.log("user", req.body);
   const orders = await Order.find();
 
   let totalAmount = 0;
@@ -116,13 +121,13 @@ async function updateStock(id, quantity) {
 
 // delete Order -- Admin
 exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findOneAndRemove(req.params.id);
 
   if (!order) {
     return next(new ErrorHander("Order not found with this Id", 404));
   }
 
-  await order.remove();
+  // await order.remove();
 
   res.status(200).json({
     success: true,
