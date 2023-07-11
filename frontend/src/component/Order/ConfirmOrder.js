@@ -6,13 +6,14 @@ import { Link } from "react-router-dom";
 import { Typography } from "@material-ui/core";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom/cjs/react-router-dom";
+import { useParams, useLocation } from "react-router-dom/cjs/react-router-dom";
 const ConfirmOrder = ({ history }) => {
   let { id } = useParams();
   // const [orderDetails, setOrderDetails] = useState();
   const [cartItems, setCartItems] = useState([]);
   const [shippingInfo, setShippingInfo] = useState();
   const [user, setuser] = useState();
+  const location = useLocation();
 
   const fetchOrderDetails = async () => {
     try {
@@ -20,6 +21,7 @@ const ConfirmOrder = ({ history }) => {
         `http://localhost:4000/api/v1/orders/me`,
         { withCredentials: true }
       );
+      // console.log("location neww", location.state);
       console.log("response...", response);
       const orderDetails = response.data.orders;
       setShippingInfo(orderDetails[0].shippingInfo);
@@ -36,7 +38,7 @@ const ConfirmOrder = ({ history }) => {
     fetchOrderDetails();
     // getdetails();
   }, []);
-  console.log("uqantitty", cartItems.quantity);
+  // console.log("uqantitty", cartItems.quantity);
   const subtotal = cartItems.quantity * cartItems.price;
 
   const shippingCharges = subtotal > 1000 ? 0 : 200;

@@ -38,9 +38,22 @@ const ProductDetails = (product) => {
     setQuantity(qty);
   };
   const addToCartHendler = () => {
-    history.push("/Shipping");
-    console.log("rrrrrr", setdata._id);
-    localStorage.setItem(`cart_${setdata._id}`, JSON.stringify({ ...setdata }));
+    history.push("/Shipping", {
+      data: {
+        params1: id,
+        params2: quantity,
+        params3: setdata.name,
+        params4: setdata.price,
+      },
+    });
+    console.log("hellllllll", {
+      params1: id,
+      params2: quantity,
+      params3: setdata.name,
+      params4: setdata.price,
+    });
+    // console.log("rrrrrr", setdata._id);
+    // localStorage.setItem(`cart_${setdata._id}`, JSON.stringify({ ...setdata }));
     console.log(setdata);
     // alert("Added to Cart Successfully!");
   };

@@ -16,9 +16,34 @@ import CreditCardIcon from "@material-ui/icons/CreditCard";
 import EventIcon from "@material-ui/icons/Event";
 import VpnKeyIcon from "@material-ui/icons/VpnKey";
 const Payment = () => {
+  const alert = useAlert();
   const orderInfo = JSON.parse(sessionStorage.getItem("orderinfo"));
   const payBtn = useRef();
-  const submitHandler = () => {};
+  const submitHandler = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:4000/api/v1/payment/process", {
+        orderInfo: orderInfo,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          alert.show("Payment Successful", {
+            type: "success",
+          });
+        } else {
+          alert.show("Payment Failed", {
+            type: "error",
+          });
+        }
+      })
+      .catch((err) => {
+        alert.show("Payment Failed", {
+          type: "error",
+        });
+      });
+    payBtn.current.click();
+    window.location.reload();
+  };
   return (
     <Fragment>
       <MetaData title="Payment" />

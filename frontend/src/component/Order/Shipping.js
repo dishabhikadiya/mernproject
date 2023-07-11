@@ -21,7 +21,7 @@ const Shipping = () => {
   const [country, setCountry] = useState();
   const [pincode, setPinCode] = useState();
   const [phoneNo, setPhoneNo] = useState();
-  // const [product, setproduct] = useState();
+  const [product, setproduct] = useState();
 
   const getdetails = (id) => {
     axios.get(`http://localhost:4000/api/v1/product/${id}`, {
@@ -61,10 +61,23 @@ const Shipping = () => {
           },
         }
       );
-      console.log(response)
+      console.log(response);
       if (response) {
         console.log("shipping success");
-        history.push("/order/confirm");
+        history.push("/order/confirm", {
+          data: {
+            params1: state.id,
+            params2: state.quantity,
+            params3: state.name,
+            params4: state.price,
+          },
+        });
+        console.log("11111111111111111111111", {
+          params1: state.id,
+          params2: state.quantity,
+          params3: state.name,
+          params4: state.price,
+        });
         alert.success("success");
       }
       setAddress("");
